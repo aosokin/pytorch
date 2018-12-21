@@ -33,6 +33,7 @@ namespace script {
 //       | Return(List<Expr> values)                                    TK_RETURN
 //       | ExprStmt(List<Expr> expr)                                    TK_EXPR_STMT
 //       | Raise(Expr expr)                                             TK_RAISE
+//       | Def                                                          TK_DEF
 //
 // Expr  = TernaryIf(Expr cond, Expr true_expr, Expr false_expr)        TK_IF_EXPR
 //       | BinOp(Expr lhs, Expr rhs)
@@ -218,6 +219,7 @@ struct Stmt : public TreeView {
       case TK_RAISE:
       case TK_ASSERT:
       case TK_PASS:
+      case TK_DEF:
         return;
       default:
         throw ErrorReport(tree) << kindToString(tree->kind()) << " is not a valid Stmt";
@@ -497,11 +499,11 @@ struct Return : public Stmt {
   explicit Return(const TreeRef& tree) : Stmt(tree) {
     tree_->match(TK_RETURN);
   }
-  List<Expr> values() const {
-    return List<Expr>(subtree(0));
+  Expr expr() const {
+    return Expr(subtree(0));
   }
-  static Return create(const SourceRange& range, const List<Expr>& values) {
-    return Return(Compound::create(TK_RETURN, range, {values}));
+  static Return create(const SourceRange& range, const Expr& value) {
+    return Return(Compound::create(TK_RETURN, range, {value}));
   }
 };
 
